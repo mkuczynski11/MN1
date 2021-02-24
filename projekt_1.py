@@ -1,4 +1,4 @@
-%matplotlib inline                      #handling jupyter error
+#%matplotlib inline                      #handling jupyter error
 import pandas
 from projekt_1_handlers import emaCompute
 import matplotlib.pyplot as plt
@@ -12,16 +12,20 @@ np_csv = wig20_input.to_numpy()         #numpy conversion
 values = np_csv[:,4]                    #values to compute
 
 macd_val = []
+prices_df = pandas.DataFrame(values)
+day12 = prices_df.ewm(span=12).mean()
+day26 = prices_df.ewm(span=26).mean()
 for i in range(26,i_size,1):            #computing macd values from 26 to the end, because we need 27 values in case to compute ema26
-    ema_12 = emaCompute(12,i,values)
-    ema_26 = emaCompute(26,i,values)
+    ema_12 = day12.iloc[i,0]
+    ema_26 = day26.iloc[i,0]
     macd_val.append(ema_12 - ema_26)
 
 signal_val = []                         #computing macd signal values from 9 to the end, because we need 19 values in case to compute ema9
+signal_df = pandas.DataFrame(macd_val)
+day9 = signal_df.ewm(span=9).mean()
 for i in range(9, len(macd_val),1):
-    ema_9 = emaCompute(9,i,macd_val)
+    ema_9 = day9.iloc[i,0]
     signal_val.append(ema_9)
-
 
 x_axis = np.arange(0,len(signal_val))
 x_limit = [len(signal_val)- 100, len(signal_val)-1]         #limitations to plots
@@ -43,5 +47,3 @@ plt.title("Values")
 axes = plt.gca()
 axes.set_xlim(x_limit)
 plt.show()
-print(values[-1])
-print(values[-2])
