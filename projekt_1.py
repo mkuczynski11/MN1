@@ -1,4 +1,4 @@
-%matplotlib inline
+%matplotlib inline                      #handling jupyter error
 import pandas
 from projekt_1_handlers import emaCompute
 import matplotlib.pyplot as plt
@@ -24,10 +24,24 @@ for i in range(9, len(macd_val),1):
 
 
 x_axis = np.arange(0,len(signal_val))
-plt.plot(x_axis, macd_val[9:])
-plt.plot(x_axis, signal_val)
-plt.title("MACD")
+x_limit = [len(signal_val)- 100, len(signal_val)-1]         #limitations to plots
+y_limit = [-200,200]
+
+plt.plot(x_axis, macd_val[9:],'b', label="MACD")            #plotting MACD and MACD-signal on each other
+plt.plot(x_axis, signal_val,'r', label="MACD-signal")       #red - MACD-signal, blue - MACD
+plt.title("MACD, MACD-signal")
+plt.xlabel("Indeks próbki")
+plt.ylabel("Wskaźnik")
+plt.legend(loc="upper left")
 axes = plt.gca()
-axes.set_xlim([len(signal_val)- 300, len(signal_val)-1])
-axes.set_ylim([-200,200])
+axes.set_xlim(x_limit)
+axes.set_ylim(y_limit)
 plt.show()
+
+plt.plot(x_axis, values[35:])                               #plotting values in case to check the usage of the MACD
+plt.title("Values")
+axes = plt.gca()
+axes.set_xlim(x_limit)
+plt.show()
+print(values[-1])
+print(values[-2])
