@@ -78,14 +78,9 @@ def computeAsset(macd_val, signal_val,values):
     print("Maxymalny kapitał kiedykolwiek: ", max_value, " w dniu próbki nr.", i)
     print('')
 
-def assetAlg(values, highest, lowest, macd_val):
+def assetAlg(values, highest, lowest, macd_val, wpr_val, smma_val):
     #algorithm for auto buy/sell mechanism on stock
     #using WPR, MACD, SMM to compute through each day and decide wheter buy or sell
-    wpr_val = []
-    smma_val = []
-    for i in range(0,len(values),1):
-        wpr_val.append(wprCompute(14,i,values,highest,lowest))
-        smma_val.append(smmCompute(50,i,values,smma_val))
 
     asset = 1000
     cur_value = 0

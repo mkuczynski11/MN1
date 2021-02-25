@@ -1,4 +1,6 @@
 #%matplotlib inline                      #handling jupyter error
+from abc import abstractmethod
+from os import add_dll_directory, fspath
 import pandas
 from projekt_1_handlers import assetAlg, computeAsset, emaCompute, menageStock, smmCompute, wprCompute
 import matplotlib.pyplot as plt
@@ -14,6 +16,8 @@ macd_val = []
 signal_val = []
 lowest = np_csv[:,3]
 highest = np_csv[:,2]
+wpr_val = []
+smma_val = []
 
 def showPlot():
     plt.plot(x_axis, macd_val,'b', label="MACD")            #plotting MACD and MACD-signal on each other
@@ -42,6 +46,10 @@ for i in range(0, len(macd_val),1):
     ema_9 = emaCompute(9,i,macd_val)
     signal_val.append(ema_9)
 
+for i in range(0,len(values),1):
+    wpr_val.append(wprCompute(14,i,values,highest,lowest))
+    smma_val.append(smmCompute(50,i,values,smma_val))
+
 
 x_axis = np.arange(0,len(signal_val))
 x_limit = [len(signal_val)- 100, len(signal_val)-1]         #limitations to plots
@@ -53,5 +61,5 @@ y_limit = [-200,200]
 computeAsset(macd_val,signal_val,values)                #wrapped asset computing into a function with 3 parameters which are computed values for macd,signal and closing values
                                                         #this function is computing asset using only MACD, more in projekt_1_handlers.py file
 
-assetAlg(values,highest,lowest,macd_val)                #wrapped my asset computing algorithm into function using 4 parameters, closing values, highest values, lowest values per day
-                                                        #and computed MACD, more about this in projekt_1_handlers.py
+assetAlg(values,highest,lowest,macd_val,wpr_val,smma_val)                #wrapped my asset computing algorithm into function using 4 parameters, closing values, highest values,
+                                                        #lowest values per day and computed MACD, more about this in projekt_1_handlers.py
