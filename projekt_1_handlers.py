@@ -1,3 +1,4 @@
+from datetime import time
 import pandas
 def emaCompute(N,startIndex, values):
     alfa = 2.0/(N+1.0)                              #setting up constants and sums variables
@@ -6,22 +7,19 @@ def emaCompute(N,startIndex, values):
     mul = 1 - alfa
     for i in range(0,N+1,1):                    #computing counter and denominator in one loop, i=0 i_max = N
         if(startIndex-i < 0): break
-        den += pow(mul,i)                       #den += (1 - alfa)^i
-        cntr += pow(mul,i)*values[startIndex-i] #cntr += (1 - alfa)^i * p{i}
+        den += (mul**i)                       #den += (1 - alfa)^i
+        cntr += (mul**i)*values[startIndex-i] #cntr += (1 - alfa)^i * p{i}
     return (cntr/den)
 
 def menageStock(signal):                        #function to determine where the macd and signal lines cut
     Buy = []
     Sell = []
-    flag = -1
 
-    for i in range(0,len(signal)):
-        if signal['MACD'][i] > signal['Signal Line'][i] and flag != 1:
-            Buy.append(i+35)
-            flag = 1
-        elif signal['MACD'][i] < signal['Signal Line'][i] and flag == 1:
-            Sell.append(i+35)
-            flag = 0
+    for i in range(1,len(signal)):
+        if signal['MACD'][i] > signal['Signal Line'][i] and signal['MACD'][i-1] < signal['Signal Line'][i-1]:
+            Buy.append(i)
+        elif signal['MACD'][i] < signal['Signal Line'][i] and signal['MACD'][i-1] > signal['Signal Line'][i-1]:
+            Sell.append(i)
     return (Buy, Sell)                          #returns lists of values indexes where the lines signs to buy/sell
 
 def wprCompute(N,startIndex,values, highest, lowest):            #function to compute wpr value for N period
@@ -40,7 +38,7 @@ def smmCompute(N,startIndex,values,smmSum):     #function to compute smm value f
     sum = values[startIndex]
     sum_b = smmSum[startIndex-1]
     for i in range(0,N,1):
-        if(startIndex-i < 0):break
+        if(startIndex-i < 0): break
         sum += values[startIndex-i]
     return ((sum - sum_b) / N)
 
@@ -54,7 +52,7 @@ def computeAsset(macd_val, signal_val,values):
     Times = (Buy + Sell)
     Times.sort()
 
-    asset_MACD = 1000
+    asset_MACD = 10000
     cur_value = 0
     max_value = 0
     i = 0
@@ -64,15 +62,16 @@ def computeAsset(macd_val, signal_val,values):
     print("Kapitał początkowy: ", asset_MACD)
 
     for x in range(0,len(Times)):
-        if(asset_MACD):
-            cur_value = asset_MACD / values[Times[x]]       #stock for 1000j
-            asset_MACD = 0
+        if(cur_value == 0):
+            tmp = asset_MACD % values[Times[x]]       #rest
+            cur_value = asset_MACD // values[Times[x]]       #stock for value that we posses
+            asset_MACD = tmp
         elif(cur_value):
-            asset_MACD = cur_value * values[Times[x]]       #j we can cash out
+            asset_MACD += cur_value * values[Times[x]]       #j we can cash out
             if(asset_MACD > max_value): max_value = asset_MACD; i = Times[x]
             cur_value = 0
             #print(asset_MACD)
-        if(x == len(Times)-2 and asset_MACD): break
+            if(x == len(Times)-2 and asset_MACD): break
 
     print("Kapitał: ", asset_MACD)
     print("Maxymalny kapitał kiedykolwiek: ", max_value, " w dniu próbki nr.", i)
@@ -82,7 +81,7 @@ def assetAlg(values, highest, lowest, macd_val, wpr_val, smma_val):
     #algorithm for auto buy/sell mechanism on stock
     #using WPR, MACD, SMM to compute through each day and decide wheter buy or sell
 
-    asset = 1000
+    asset = 10000
     cur_value = 0
     last_value = asset
     max_value = 0
@@ -92,18 +91,18 @@ def assetAlg(values, highest, lowest, macd_val, wpr_val, smma_val):
     print("Kapitał początkowy: ", asset)
 
     for x in range(35,len(values),1):
-        if(asset):                  #if we can invest
+        if(cur_value == 0):                  #if we can invest
             if(values[x] > smma_val[x] and macd_val[x] < 0 and wpr_val[x-1] < -80 and wpr_val[x] > -80):
-                cur_value = asset / values[x]
-                asset = 0
+                tmp = asset % values[x]
+                cur_value = asset // values[x]
+                asset = tmp
         else:                       #if we need to cash out
             if(values[x] < smma_val[x] and macd_val[x] > 0 and wpr_val[x-1] > -20 and wpr_val[x] < -20):
-                asset = cur_value * values[x]
+                asset += cur_value * values[x]
                 cur_value = 0
                 last_value = asset
                 if(max_value < asset): max_value = asset; i = x
-    if(asset == 0):
-        asset = last_value
+    asset = max(last_value,asset)
     print("Kapitał: ", asset)
     print("Maxymalny kapitał kiedykolwiek: ", max_value, " w dniu próbki nr.", i)
     print('')

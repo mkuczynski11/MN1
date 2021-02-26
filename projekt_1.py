@@ -1,6 +1,4 @@
 #%matplotlib inline                      #handling jupyter error
-from abc import abstractmethod
-from os import add_dll_directory, fspath
 import pandas
 from projekt_1_handlers import assetAlg, computeAsset, emaCompute, menageStock, smmCompute, wprCompute
 import matplotlib.pyplot as plt
